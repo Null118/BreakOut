@@ -65,8 +65,7 @@ int main(int argc, char *argv[])
         lastFrame = currentFrame;
         glfwPollEvents();
 
-        // manage user input
-        // -----------------
+        // 处理键盘输入，在回调函数中我们更改了键盘的状态，在这个处理函数中根据 AD 键的状态控制玩家移动
         Breakout.ProcessInput(deltaTime);
 
         // update game state

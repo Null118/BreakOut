@@ -21,6 +21,8 @@
   <ItemGroup>
     <ClCompile Include="2.program.cpp" />
     <ClCompile Include="GameInit\2.game.cpp" />
+    <ClCompile Include="GameInit\game_level.cpp" />
+    <ClCompile Include="GameInit\game_object.cpp" />
     <ClCompile Include="OpenGL_Init\glad.c" />
     <ClCompile Include="OpenGL_Init\shader.cpp" />
     <ClCompile Include="OpenGL_Init\sprite_renderer.cpp" />
@@ -30,6 +32,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameInit\2.game.h" />
+    <ClInclude Include="GameInit\game_level.h" />
+    <ClInclude Include="GameInit\game_object.h" />
     <ClInclude Include="OpenGL_Init\shader.h" />
     <ClInclude Include="OpenGL_Init\sprite_renderer.h" />
     <ClInclude Include="OpenGL_Init\stb_image.h" />

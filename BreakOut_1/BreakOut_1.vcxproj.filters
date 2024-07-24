@@ -39,6 +39,12 @@
     <ClCompile Include="OpenGL_Init\sprite_renderer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="GameInit\game_object.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="GameInit\game_level.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OpenGL_Init\shader.h">
@@ -57,6 +63,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="OpenGL_Init\sprite_renderer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GameInit\game_object.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GameInit\game_level.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
