@@ -48,8 +48,7 @@ int main(int argc, char *argv[])
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // initialize game
-    // ---------------
+    // 在游戏对象初始化这里进行 glsl 代码的读取、着色器的初始化、纹理设定和投影矩阵设定到最后的渲染
     Breakout.Init();
 
     // deltaTime variables

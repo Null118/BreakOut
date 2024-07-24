@@ -21,12 +21,12 @@ public:
     // 从 .vs .fs .gs 的文件中读取着色器代码创建一个着色器，并返回着色器对象
     // 注意到上文定义了一个 map，这意味着我们可以通过别名调用着色器方法，例如 ResourceManager::GetShader("yourShader").Use();
     // 当然也可以直接使用返回的对象调用它的方法，如 shader.Use();
-    static Shader    LoadShader(const char *vShaderFile, const char *fShaderFile, const char *gShaderFile, std::string name);
+    static Shader     LoadShader(const char *vShaderFile, const char *fShaderFile, const char *gShaderFile, std::string name);
     // 通过别名找到初始化过的着色器对象
-    static Shader    GetShader(std::string name);
+    static Shader&    GetShader(std::string name);
     // 同理，加载和获取纹理
-    static Texture2D LoadTexture(const char *file, bool alpha, std::string name);
-    static Texture2D GetTexture(std::string name);
+    static Texture2D  LoadTexture(const char *file, bool alpha, std::string name);
+    static Texture2D& GetTexture(std::string name);
     // 释放所有加载的资源（为什么不写在析构函数里？是因为单例模式就这样么？）
     static void      Clear();
 private:

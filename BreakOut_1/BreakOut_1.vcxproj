@@ -23,6 +23,7 @@
     <ClCompile Include="GameInit\2.game.cpp" />
     <ClCompile Include="OpenGL_Init\glad.c" />
     <ClCompile Include="OpenGL_Init\shader.cpp" />
+    <ClCompile Include="OpenGL_Init\sprite_renderer.cpp" />
     <ClCompile Include="OpenGL_Init\stb_image.cpp" />
     <ClCompile Include="OpenGL_Init\texture.cpp" />
     <ClCompile Include="ResourceManager\resource_manager.cpp" />
@@ -30,6 +31,7 @@
   <ItemGroup>
     <ClInclude Include="GameInit\2.game.h" />
     <ClInclude Include="OpenGL_Init\shader.h" />
+    <ClInclude Include="OpenGL_Init\sprite_renderer.h" />
     <ClInclude Include="OpenGL_Init\stb_image.h" />
     <ClInclude Include="OpenGL_Init\texture.h" />
     <ClInclude Include="ResourceManager\resource_manager.h" />
