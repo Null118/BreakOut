@@ -27,6 +27,8 @@ public:
     unsigned int            Width, Height;
     std::vector<GameLevel>  Levels;
     unsigned int            Level;
+    SpriteRenderer* Renderer;
+    PannelObject* Pannel;
     // constructor/destructor
     Game(unsigned int width, unsigned int height);
     ~Game();

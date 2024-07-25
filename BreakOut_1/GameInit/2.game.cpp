@@ -3,8 +3,8 @@
 #include "OpenGL_Init/sprite_renderer.h"
 #include "game_object.h"
 // 测试用，游戏类需要持有一个渲染器对象，一个玩家对象
-SpriteRenderer* Renderer;
-GameObject* Player;
+//SpriteRenderer* Renderer;
+//GameObject* Player;
 
 Game::Game(unsigned int width, unsigned int height) 
     : State(GAME_ACTIVE), Keys(), Width(width), Height(height)
@@ -47,8 +47,8 @@ void Game::Init()
     this->Levels.push_back(four);
     this->Level = 0;
     // 加载玩家（挡板）
-    glm::vec2 playerPos = glm::vec2(this->Width / 2.0f - PLAYER_SIZE.x / 2.0f, this->Height - PLAYER_SIZE.y);
-    Player = new GameObject(playerPos, PLAYER_SIZE, ResourceManager::GetTexture("paddle"));
+    glm::vec2 pannelPos = glm::vec2(this->Width / 2.0f - PLAYER_SIZE.x / 2.0f, this->Height - PLAYER_SIZE.y);
+    Pannel = new PannelObject(pannelPos, PLAYER_SIZE, ResourceManager::GetTexture("paddle"), glm::vec3(1.0f));
 }
 
 void Game::Update(float dt)
@@ -65,13 +65,13 @@ void Game::ProcessInput(float dt)
         // move playerboard
         if (this->Keys[GLFW_KEY_A])
         {
-            if (Player->Position.x >= 0.0f)
-                Player->Position.x -= velocity;
+            if (Pannel->Position.x >= 0.0f)
+                Pannel->Position.x -= velocity;
         }
         if (this->Keys[GLFW_KEY_D])
         {
-            if (Player->Position.x <= this->Width - Player->Size.x)
-                Player->Position.x += velocity;
+            if (Pannel->Position.x <= this->Width - Pannel->Size.x)
+                Pannel->Position.x += velocity;
         }
     }
 }
@@ -85,6 +85,6 @@ void Game::Render()
         // 画关卡里的砖块
         this->Levels[this->Level].Draw(*Renderer);
         // 画玩家（挡板）
-        Player->Draw(*Renderer);
+        Pannel->Draw(*Renderer);
     }
 }

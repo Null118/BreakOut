@@ -15,7 +15,7 @@ class GameLevel
 {
 public:
     // 每一个砖块都是一个 GameObject 对象，用一个数组储存
-    std::vector<GameObject> Bricks;
+    std::vector<BrickObject> Bricks;
 
     GameLevel() { }
     // 把文件里的二维关卡设计读到成员变量中
