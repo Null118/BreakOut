@@ -36,7 +36,7 @@ void Game::Init()
     ResourceManager::LoadTexture("../textures/block.png", false, "block");
     ResourceManager::LoadTexture("../textures/block_solid.png", false, "block_solid");
     ResourceManager::LoadTexture("../textures/paddle.png", true, "paddle");
-    // 加载关卡
+    // 创建关卡，每个关卡保存了不同的砖块对象的数组
     GameLevel one; one.Load("levels/one.lvl", this->Width, this->Height / 2);
     GameLevel two; two.Load("levels/two.lvl", this->Width, this->Height / 2);
     GameLevel three; three.Load("levels/three.lvl", this->Width, this->Height / 2);
@@ -46,14 +46,17 @@ void Game::Init()
     this->Levels.push_back(three);
     this->Levels.push_back(four);
     this->Level = 0;
-    // 加载玩家（挡板）
+    // 创建玩家（挡板）
     glm::vec2 pannelPos = glm::vec2(this->Width / 2.0f - PLAYER_SIZE.x / 2.0f, this->Height - PLAYER_SIZE.y);
     Pannel = new PannelObject(pannelPos, PLAYER_SIZE, ResourceManager::GetTexture("paddle"), glm::vec3(1.0f));
+    // 创建球
+    glm::vec2 ballPos = pannelPos + glm::vec2(PLAYER_SIZE.x / 2 - BALL_RADIUS, -BALL_RADIUS * 2);
+    Ball = new BallObject(ballPos, BALL_RADIUS, ResourceManager::GetTexture("face"), INITIAL_BALL_VELOCITY);
 }
 
 void Game::Update(float dt)
 {
-    
+    Ball->Move(dt, this->Width);
 }
 
 // 处理案件情况，A, D 键控制左右移动，并且不能超过边界
@@ -62,17 +65,25 @@ void Game::ProcessInput(float dt)
     if (this->State == GAME_ACTIVE)
     {
         float velocity = PLAYER_VELOCITY * dt;
-        // move playerboard
+        // 板子要和小球一起动
         if (this->Keys[GLFW_KEY_A])
         {
-            if (Pannel->Position.x >= 0.0f)
+            if (Pannel->Position.x >= 0.0f) {
                 Pannel->Position.x -= velocity;
+                if (Ball->Stuck)
+                    Ball->Position.x -= velocity;
+            }
         }
         if (this->Keys[GLFW_KEY_D])
         {
-            if (Pannel->Position.x <= this->Width - Pannel->Size.x)
+            if (Pannel->Position.x <= this->Width - Pannel->Size.x) {
                 Pannel->Position.x += velocity;
+                if (Ball->Stuck)
+                    Ball->Position.x += velocity;
+            }
         }
+        if (this->Keys[GLFW_KEY_SPACE])
+            Ball->Stuck = false;
     }
 }
 
@@ -86,5 +97,7 @@ void Game::Render()
         this->Levels[this->Level].Draw(*Renderer);
         // 画玩家（挡板）
         Pannel->Draw(*Renderer);
+        // 画 球
+        Ball->Draw(*Renderer);
     }
 }

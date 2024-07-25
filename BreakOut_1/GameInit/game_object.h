@@ -11,18 +11,12 @@
 class GameObject
 {
 public:
-	    // 全部的状态，不同的道具可能持有不同的状态
+	// 作为基类，仅仅定义了绘制所必须的变量
+    // 位置和大小，纹理和颜色
     glm::vec2   Position, Size;
     glm::vec3   Color;
-    // float       Rotation;
-    //bool        issolid;
-    //bool        destroyed;
-    // 应该持有纹理和渲染器对象，纹理用于初始化，渲染器用于绘制函数
     Texture2D   Sprite;	
-    SpriteRenderer* Renderer;
-    // GameObject* Player;
-    //GameObject();
-    GameObject(glm::vec2 pos, glm::vec2 size, Texture2D sprite, glm::vec3 color = glm::vec3(1.0f));
+    GameObject(glm::vec2 pos, glm::vec2 size, Texture2D sprite, glm::vec3 color);
 
     
     virtual void Draw(SpriteRenderer &renderer);
@@ -34,42 +28,33 @@ class PannelObject :public GameObject
 {
 public:
     PannelObject(glm::vec2 pos, glm::vec2 size, Texture2D sprite, glm::vec3 color);
-	// Pannel createObject();
 };
 
 class BrickObject :public GameObject
 {
 public:
+    // 砖块具有的属性：是否可以被摧毁，是否已经被摧毁
     bool        IsSolid;
     bool        Destroyed;
 
     BrickObject(glm::vec2 pos, glm::vec2 size, Texture2D sprite, glm::vec3 color);
-    // Bricks createObject();
 };
 
-class Ball :public GameObject
+class BallObject : public GameObject
 {
 public:
-    // Ball createObject();
+    // 球具有的属性：半径，是否被发射，
+    float       Radius;
+    bool        Stuck;
+    glm::vec2   Velocity;
+    bool        Sticky, PassThrough;
+
+    BallObject(glm::vec2 pos, float radius, Texture2D sprite, glm::vec2 velocity);
+    // moves the ball, keeping it constrained within the window bounds (except bottom edge); returns new position
+    glm::vec2 Move(float dt, unsigned int window_width);
+    // resets the ball to original state with given position and velocity
+    void      Reset(glm::vec2 position, glm::vec2 velocity);
 };
 
-
-//class GameObject
-//{
-//public:
-//    // 全部的状态，不同的道具可能持有不同的状态
-//    glm::vec2   Position, Size, Velocity;
-//    glm::vec3   Color;
-//    float       Rotation;
-//    bool        IsSolid;
-//    bool        Destroyed;
-//    // 持有的纹理
-//    Texture2D   Sprite;	
-//    GameObject();
-//    GameObject(glm::vec2 pos, glm::vec2 size, Texture2D sprite, glm::vec3 color = glm::vec3(1.0f),
-//        glm::vec2 velocity = glm::vec2(0.0f, 0.0f));
-//    // 绘制
-//    virtual void Draw(SpriteRenderer &renderer);
-//};
 
 #endif
