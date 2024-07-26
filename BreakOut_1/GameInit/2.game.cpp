@@ -54,12 +54,16 @@ void Game::Init()
     Ball = new BallObject(ballPos, BALL_RADIUS, ResourceManager::GetTexture("face"), INITIAL_BALL_VELOCITY);
 }
 
+// 主程序的渲染循环时每次都会调用 update，渲染每一帧都需要更新游戏状态
 void Game::Update(float dt)
 {
+    // 计算每帧小球的移动
     Ball->Move(dt, this->Width);
+    // 检测是否碰撞
+    this->DoCollisions();
 }
 
-// 处理案件情况，A, D 键控制左右移动，并且不能超过边界
+// 处理按键情况，A, D 键控制左右移动，并且不能超过边界
 void Game::ProcessInput(float dt)
 {
     if (this->State == GAME_ACTIVE)
@@ -87,6 +91,7 @@ void Game::ProcessInput(float dt)
     }
 }
 
+// 和 update 分离，前者是更新状态的函数，在更新完之后再调用此函数渲染
 void Game::Render()
 {
     if (this->State == GAME_ACTIVE)
@@ -99,5 +104,42 @@ void Game::Render()
         Pannel->Draw(*Renderer);
         // 画 球
         Ball->Draw(*Renderer);
+    }
+}
+
+// 判断是否碰撞
+GLboolean CheckCollision(BallObject& one, BrickObject& two) // 长方形 - 圆形 碰撞检测
+{
+    // 从左上角加上半径，得到中心点
+    glm::vec2 center(one.Position + one.Radius);
+    // 同上，计算砖块的中心点
+    glm::vec2 aabb_half_extents(two.Size.x / 2.0f, two.Size.y / 2.0f);
+    glm::vec2 aabb_center(two.Position.x + aabb_half_extents.x, two.Position.y + aabb_half_extents.y);
+    // 先获得从圆心指向矩形中心的向量
+    // 然后用半边长限制它，找出和圆心在同一水平/垂直线上的矩形上的点
+    // 此时 closest 是圆 上离长方形最远的一点（想象它们平行，那就是圆的最右边的点离矩形最远，对应到矩形的中间）延长出来交到矩形的点，到矩形中心的距离
+    // 所以这个 difference 代表 矩形离圆最近的一点 到 圆中心 的向量
+    glm::vec2 difference = center - aabb_center;
+    glm::vec2 clamped = glm::clamp(difference, -aabb_half_extents, aabb_half_extents);
+    glm::vec2 closest = aabb_center + clamped;
+    difference = closest - center;
+
+
+    return glm::length(difference) < one.Radius;
+}
+
+// 碰撞的话，置 Destroyed 为 true，停止渲染
+void Game::DoCollisions()
+{
+    for (BrickObject& box : this->Levels[this->Level].Bricks)
+    {
+        if (!box.Destroyed)
+        {
+            if (CheckCollision(*Ball, box))
+            {
+                if (!box.IsSolid)
+                    box.Destroyed = GL_TRUE;
+            }
+        }
     }
 }

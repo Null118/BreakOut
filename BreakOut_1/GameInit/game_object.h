@@ -27,8 +27,10 @@ public:
 class PannelObject :public GameObject
 {
 public:
+    // 板子不需要特殊的属性表示额外状态，能被绘制就行
     PannelObject(glm::vec2 pos, glm::vec2 size, Texture2D sprite, glm::vec3 color);
 };
+
 
 class BrickObject :public GameObject
 {
@@ -39,6 +41,7 @@ public:
 
     BrickObject(glm::vec2 pos, glm::vec2 size, Texture2D sprite, glm::vec3 color);
 };
+
 
 class BallObject : public GameObject
 {
