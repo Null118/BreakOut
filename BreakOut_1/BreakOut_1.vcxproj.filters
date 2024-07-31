@@ -45,6 +45,12 @@
     <ClCompile Include="GameInit\game_level.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="GameInit\particle_generator.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Game_Process\post_processor.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OpenGL_Init\shader.h">
@@ -69,6 +75,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="GameInit\game_level.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GameInit\particle_generator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Game_Process\post_processor.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

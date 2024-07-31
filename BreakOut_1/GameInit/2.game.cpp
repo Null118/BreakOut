@@ -2,6 +2,7 @@
 #include "ResourceManager/resource_manager.h"
 #include "OpenGL_Init/sprite_renderer.h"
 #include "game_object.h"
+#include "particle_generator.h"
 // ²âÊÔÓÃ£¬ÓÎÏ·ÀàĞèÒª³ÖÓĞÒ»¸öäÖÈ¾Æ÷¶ÔÏó£¬Ò»¸öÍæ¼Ò¶ÔÏó
 //SpriteRenderer* Renderer;
 //GameObject* Player;
@@ -14,7 +15,11 @@ Game::Game(unsigned int width, unsigned int height)
 
 Game::~Game()
 {
-    
+    delete Renderer;
+    delete Pannel;
+    delete Ball;
+    delete Particles;
+    delete Effects;
 }
 
 // ÓÃÓÚËùÓĞ»æÖÆĞèÒªµÄ×ÊÔ´µÄ¼ÓÔØ
@@ -22,12 +27,19 @@ void Game::Init()
 {
     // ´´½¨±ğÃûÎª sprite µÄ×ÅÉ«Æ÷
     ResourceManager::LoadShader("shaders/sprite.vs", "shaders/sprite.fs", nullptr, "sprite");
+    // ´´½¨äÖÈ¾Á£×ÓµÄ×ÅÉ«Æ÷
+    ResourceManager::LoadShader("shaders/particle.vs", "shaders/particle.fs", nullptr, "particle");
+    // ´´½¨äÖÈ¾ÌØĞ§µÄ×ÅÉ«Æ÷
+    ResourceManager::LoadShader("shaders/post_processing.vs", "shaders/post_processing.fs", nullptr, "postprocessing");
     // Éè¶¨Í¶Ó°¾ØÕó£¬ÒòÎªÊÇ¶şÎ¬ÓÎÏ·£¬²»ĞèÒª¹Û²ì¾ØÕó
+    // ×ÅÉ«Æ÷ÖĞµÄÆäËû uniform ¾ØÕó
     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(this->Width),
         static_cast<float>(this->Height), 0.0f, -1.0f, 1.0f);
 
     ResourceManager::GetShader("sprite").Use().SetInteger("image", 0);
     ResourceManager::GetShader("sprite").SetMatrix4("projection", projection);
+    ResourceManager::GetShader("particle").Use().SetInteger("sprite", 0);
+    ResourceManager::GetShader("particle").SetMatrix4("projection", projection);
     // ½«Êµ¼ÊäÖÈ¾µÄ¹¤×÷½»¸ø äÖÈ¾Àà£¬°üÀ¨ ±ä»»£¬°ó¶¨ÎÆÀíºÍÏÔÊ¾
     Renderer = new SpriteRenderer(ResourceManager::GetShader("sprite"));
     // Ê¹ÓÃ×ÊÔ´¹ÜÀíÆ÷¼ÓÔØÎÆÀí
@@ -36,6 +48,7 @@ void Game::Init()
     ResourceManager::LoadTexture("../textures/block.png", false, "block");
     ResourceManager::LoadTexture("../textures/block_solid.png", false, "block_solid");
     ResourceManager::LoadTexture("../textures/paddle.png", true, "paddle");
+    ResourceManager::LoadTexture("../textures/particle.png", GL_TRUE, "particle");
     // ´´½¨¹Ø¿¨£¬Ã¿¸ö¹Ø¿¨±£´æÁË²»Í¬µÄ×©¿é¶ÔÏóµÄÊı×é
     GameLevel one; one.Load("levels/one.lvl", this->Width, this->Height / 2);
     GameLevel two; two.Load("levels/two.lvl", this->Width, this->Height / 2);
@@ -52,6 +65,15 @@ void Game::Init()
     // ´´½¨Çò
     glm::vec2 ballPos = pannelPos + glm::vec2(PLAYER_SIZE.x / 2 - BALL_RADIUS, -BALL_RADIUS * 2);
     Ball = new BallObject(ballPos, BALL_RADIUS, ResourceManager::GetTexture("face"), INITIAL_BALL_VELOCITY);
+    // ´´½¨Á£×ÓÌØĞ§Æ÷
+    Particles = new ParticleGenerator(
+        ResourceManager::GetShader("particle"),
+        ResourceManager::GetTexture("particle"),
+        2000
+    );
+    // ´´½¨ÌØĞ§¿ØÖÆÆ÷
+    Effects = new PostProcessor(ResourceManager::GetShader("postprocessing"), this->Width, this->Height);
+    // Effects->Chaos = true;
 }
 
 // Ö÷³ÌĞòµÄäÖÈ¾Ñ­»·Ê±Ã¿´Î¶¼»áµ÷ÓÃ update£¬äÖÈ¾Ã¿Ò»Ö¡¶¼ĞèÒª¸üĞÂÓÎÏ·×´Ì¬
@@ -61,6 +83,21 @@ void Game::Update(float dt)
     Ball->Move(dt, this->Width);
     // ¼ì²âÊÇ·ñÅö×²
     this->DoCollisions();
+    // ¼ì²âÊÇ·ñ½áÊøÓÎÏ·
+    if (Ball->Position.y >= this->Height) // ÇòÊÇ·ñ½Ó´¥µ×²¿±ß½ç£¿
+    {
+        this->ResetLevel();
+        this->ResetPlayer();
+    }
+    // ¸üĞÂÁ£×ÓÌØĞ§
+    Particles->Update(dt, *Ball, 2, glm::vec2(BALL_RADIUS / 2));
+    // ÅĞ¶Ï»Î¶¯µÄÊ±¼äÊÇ·ñ½áÊø
+    if (ShakeTime > 0.0f)
+    {
+        ShakeTime -= dt;
+        if (ShakeTime <= 0.0f)
+            Effects->Shake = false;
+    }
 }
 
 // ´¦Àí°´¼üÇé¿ö£¬A, D ¼ü¿ØÖÆ×óÓÒÒÆ¶¯£¬²¢ÇÒ²»ÄÜ³¬¹ı±ß½ç
@@ -96,19 +133,27 @@ void Game::Render()
 {
     if (this->State == GAME_ACTIVE)
     {
+        // ±» begin ºÍ end È¦ÆğÀ´µÄ²¿·Ö´ú±íäÖÈ¾ÔÚ MSFBO µÄ¶ÔÏó£¬¼´ÊÇĞèÒª¾­¹ıºóÆÚ´¦ÀíµÄ¶ÔÏó
+        Effects->BeginRender();
+
         // ÏÈ»­Ò»¸ö±³¾°
         Renderer->DrawSprite(ResourceManager::GetTexture("background"), glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height), 0.0f);
         // »­¹Ø¿¨ÀïµÄ×©¿é
         this->Levels[this->Level].Draw(*Renderer);
         // »­Íæ¼Ò£¨µ²°å£©
         Pannel->Draw(*Renderer);
+        // »­Á£×ÓÌØĞ§£¬Òª×¢ÒâäÖÈ¾µÄË³Ğò£¬ÌØĞ§ÔÚÆäËû¶«Î÷ºóäÖÈ¾£¬ËµÃ÷Ëü»á¸²¸ÇÔÚËûÃÇÉÏÃæ£¬¶ø×îºóäÖÈ¾Çò£¬È·±£ÇòÊÇ×îÓÅÏÈÏÔÊ¾µÄ
+        Particles->Draw();
         // »­ Çò
         Ball->Draw(*Renderer);
+
+        Effects->EndRender();
+        Effects->Render(glfwGetTime());     // ´¦ÀíÍêºóÔÙ»æÖÆ
     }
 }
 
 // ÅĞ¶ÏÊÇ·ñÅö×²
-GLboolean CheckCollision(BallObject& one, BrickObject& two) // ³¤·½ĞÎ - Ô²ĞÎ Åö×²¼ì²â
+Collision Game::CheckCollision(BallObject& one, GameObject& two) // ³¤·½ĞÎ - Ô²ĞÎ Åö×²¼ì²â
 {
     // ´Ó×óÉÏ½Ç¼ÓÉÏ°ë¾¶£¬µÃµ½ÖĞĞÄµã
     glm::vec2 center(one.Position + one.Radius);
@@ -124,22 +169,119 @@ GLboolean CheckCollision(BallObject& one, BrickObject& two) // ³¤·½ĞÎ - Ô²ĞÎ Åö×
     glm::vec2 closest = aabb_center + clamped;
     difference = closest - center;
 
-
-    return glm::length(difference) < one.Radius;
+    if (glm::length(difference) <= one.Radius)
+        return std::make_tuple(GL_TRUE, VectorDirection(difference), difference);
+    else
+        return std::make_tuple(GL_FALSE, UP, glm::vec2(0, 0));
 }
 
+// Ö´ĞĞ·¢ÉúÅö×²ºóµÄÂß¼­
 // Åö×²µÄ»°£¬ÖÃ Destroyed Îª true£¬Í£Ö¹äÖÈ¾
+// Í¬Ê±¼ÆËãÅö×²ÇÖÈëµÄ³Ì¶È£¬²¢ÇÒ»ùÓÚÅö×²·½ÏòÊ¹ÇòµÄÎ»ÖÃÊ¸Á¿ÓëÆäÏà¼Ó»òÏà¼õ
 void Game::DoCollisions()
 {
+    // ¼ÆËãÇòºÍ×©¿éµÄÅö×²£¬²¢¸ù¾İ½á¹û¸Ä±äÇòµÄËÙ¶È¡¢×©¿éµÄÏÔÊ¾×´Ì¬
     for (BrickObject& box : this->Levels[this->Level].Bricks)
     {
         if (!box.Destroyed)
         {
-            if (CheckCollision(*Ball, box))
+            Collision collision = CheckCollision(*Ball, box);
+            if (std::get<0>(collision)) // Èç¹ûcollision ÊÇ true
             {
+                // Èç¹û×©¿é²»ÊÇÊµĞÄ¾ÍÏú»Ù×©¿é
                 if (!box.IsSolid)
                     box.Destroyed = GL_TRUE;
+                else
+                {   // Èç¹ûÊÇÊµĞÄµÄ×©¿éÔò¼¤»îshakeÌØĞ§
+                    ShakeTime = 0.05f;
+                    Effects->Shake = true;
+                }
+                // Åö×²´¦Àí
+                Direction dir = std::get<1>(collision);
+                glm::vec2 diff_vector = std::get<2>(collision);
+                if (dir == LEFT || dir == RIGHT) // Ë®Æ½·½ÏòÅö×²
+                {
+                    Ball->Velocity.x = -Ball->Velocity.x; // ·´×ªË®Æ½ËÙ¶È
+                    // ÖØ¶¨Î»
+                    GLfloat penetration = Ball->Radius - std::abs(diff_vector.x);
+                    if (dir == LEFT)
+                        Ball->Position.x += penetration; // ½«ÇòÓÒÒÆ
+                    else
+                        Ball->Position.x -= penetration; // ½«Çò×óÒÆ
+                }
+                else // ´¹Ö±·½ÏòÅö×²
+                {
+                    Ball->Velocity.y = -Ball->Velocity.y; // ·´×ª´¹Ö±ËÙ¶È
+                    // ÖØ¶¨Î»
+                    GLfloat penetration = Ball->Radius - std::abs(diff_vector.y);
+                    if (dir == UP)
+                        Ball->Position.y -= penetration; // ½«ÇòÉÏÒÆ
+                    else
+                        Ball->Position.y += penetration; // ½«ÇòÏÂÒÆ
+                }
             }
         }
     }
+    // ¼ÆËãÇòÓë°å×ÓµÄÅö×²£¬²¢¸ù¾İ½á¹û¸Ä±äÇòµÄËÙ¶È
+    Collision result = CheckCollision(*Ball, *Pannel);
+    if (!Ball->Stuck && std::get<0>(result))
+    {
+        // ¼ì²éÅöµ½ÁËµ²°åµÄÄÄ¸öÎ»ÖÃ£¬²¢¸ù¾İÅöµ½ÄÄ¸öÎ»ÖÃÀ´¸Ä±äËÙ¶È
+        GLfloat centerBoard = Pannel->Position.x + Pannel->Size.x / 2;
+        GLfloat distance = (Ball->Position.x + Ball->Radius) - centerBoard;
+        GLfloat percentage = distance / (Pannel->Size.x / 2);
+        // ÒÀ¾İ½á¹ûÒÆ¶¯
+        GLfloat strength = 2.0f;
+        glm::vec2 oldVelocity = Ball->Velocity;
+        Ball->Velocity.x = INITIAL_BALL_VELOCITY.x * percentage * strength;
+        // Èç¹ûÇòÈëÇÖ°å×ÓÌ«¶à£¬²»×ãÒÔÔÚÒ»Ö¡ÄÚµ¯³ö°å×Ó£¬ÄÇÃ´»áÒ»Ö±ÔÚ°å×ÓÄÚ²¿·´×ªËÙ¶È
+        // Ball->Velocity.y = -Ball->Velocity.y;
+        Ball->Velocity.y = -1 * abs(Ball->Velocity.y);
+        Ball->Velocity = glm::normalize(Ball->Velocity) * glm::length(oldVelocity);
+    }
+}
+
+
+
+Direction Game::VectorDirection(glm::vec2 target)
+{
+    glm::vec2 compass[] = {
+        glm::vec2(0.0f, 1.0f),  // ÉÏ
+        glm::vec2(1.0f, 0.0f),  // ÓÒ
+        glm::vec2(0.0f, -1.0f), // ÏÂ
+        glm::vec2(-1.0f, 0.0f)  // ×ó
+    };
+    GLfloat max = 0.0f;
+    GLuint best_match = -1;
+    for (GLuint i = 0; i < 4; i++)
+    {
+        GLfloat dot_product = glm::dot(glm::normalize(target), compass[i]);
+        if (dot_product > max)
+        {
+            max = dot_product;
+            best_match = i;
+        }
+    }
+    return (Direction)best_match;
+}
+
+
+
+void Game::ResetLevel()
+{
+    if (this->Level == 0)this->Levels[0].Load("levels/one.lvl", this->Width, this->Height * 0.5f);
+    else if (this->Level == 1)
+        this->Levels[1].Load("levels/two.lvl", this->Width, this->Height * 0.5f);
+    else if (this->Level == 2)
+        this->Levels[2].Load("levels/three.lvl", this->Width, this->Height * 0.5f);
+    else if (this->Level == 3)
+        this->Levels[3].Load("levels/four.lvl", this->Width, this->Height * 0.5f);
+}
+
+void Game::ResetPlayer()
+{
+    // Reset player/ball stats
+    Pannel->Size = PLAYER_SIZE;
+    Pannel->Position = glm::vec2(this->Width / 2 - PLAYER_SIZE.x / 2, this->Height - PLAYER_SIZE.y);
+    Ball->Reset(Pannel->Position + glm::vec2(PLAYER_SIZE.x / 2 - BALL_RADIUS, -(BALL_RADIUS * 2)), INITIAL_BALL_VELOCITY);
 }

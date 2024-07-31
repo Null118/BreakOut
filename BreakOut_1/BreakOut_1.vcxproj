@@ -23,6 +23,8 @@
     <ClCompile Include="GameInit\2.game.cpp" />
     <ClCompile Include="GameInit\game_level.cpp" />
     <ClCompile Include="GameInit\game_object.cpp" />
+    <ClCompile Include="GameInit\particle_generator.cpp" />
+    <ClCompile Include="Game_Process\post_processor.cpp" />
     <ClCompile Include="OpenGL_Init\glad.c" />
     <ClCompile Include="OpenGL_Init\shader.cpp" />
     <ClCompile Include="OpenGL_Init\sprite_renderer.cpp" />
@@ -34,6 +36,8 @@
     <ClInclude Include="GameInit\2.game.h" />
     <ClInclude Include="GameInit\game_level.h" />
     <ClInclude Include="GameInit\game_object.h" />
+    <ClInclude Include="GameInit\particle_generator.h" />
+    <ClInclude Include="Game_Process\post_processor.h" />
     <ClInclude Include="OpenGL_Init\shader.h" />
     <ClInclude Include="OpenGL_Init\sprite_renderer.h" />
     <ClInclude Include="OpenGL_Init\stb_image.h" />
@@ -96,6 +100,10 @@
     <LibraryPath>E:\OpenGL\BreakOut_1\lib;$(LibraryPath)</LibraryPath>
     <IncludePath>E:\OpenGL\BreakOut_1\includes;E:\OpenGL\BreakOut_1\BreakOut_1;$(IncludePath)</IncludePath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>E:\OpenGL\BreakOut_1\BreakOut_1;E:\OpenGL\BreakOut_1\includes;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\OpenGL\BreakOut_1\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -151,6 +159,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

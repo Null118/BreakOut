@@ -4,6 +4,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "game_level.h"
+#include "particle_generator.h"
+#include "Game_Process/post_processor.h"
 
 // 游戏状态
 enum GameState {
@@ -12,13 +14,24 @@ enum GameState {
     GAME_WIN
 };
 
+// 枚举类型，代表四个方向，用于反转对应方向的速度
+enum Direction {
+    UP,
+    RIGHT,
+    DOWN,
+    LEFT
+};
+
+// 碰撞检测函数需要返回 是否碰撞、碰撞方向和当前侵入的方向向量的元组，便于处理碰撞
+typedef std::tuple<GLboolean, Direction, glm::vec2> Collision;
+
 
 // 玩家（挡板）的初始化数据
 const glm::vec2 PLAYER_SIZE(100.0f, 20.0f);
 const float PLAYER_VELOCITY(500.0f);
 
 // 球 的初始化数据
-const glm::vec2 INITIAL_BALL_VELOCITY(100.0f, -350.0f);
+const glm::vec2 INITIAL_BALL_VELOCITY(150.0f, -500.0f);
 const GLfloat BALL_RADIUS = 12.5f;
 
 
@@ -34,6 +47,12 @@ public:
     SpriteRenderer* Renderer;
     PannelObject* Pannel;
     BallObject* Ball;
+    // 粒子类
+    ParticleGenerator* Particles;
+    //特效类
+    PostProcessor* Effects;
+    GLfloat            ShakeTime = 0.0f;
+
     // constructor/destructor
     Game(unsigned int width, unsigned int height);
     ~Game();
@@ -43,7 +62,11 @@ public:
     void ProcessInput(float dt);
     void Update(float dt);
     void Render();
+    Collision CheckCollision(BallObject& one, GameObject& two);
     void DoCollisions();
+    Direction VectorDirection(glm::vec2 target);
+    void ResetPlayer();
+    void ResetLevel();
 };
 
 #endif
